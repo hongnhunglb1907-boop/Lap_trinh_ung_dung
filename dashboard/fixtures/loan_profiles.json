@@ -1,0 +1,162 @@
+[
+  {
+    "model": "dashboard.loanprofile", "pk": 1,
+    "fields": { "code": "#CR-2024-001", "name": "Nguyễn Văn An", "email": "nguyenvanan@email.com",
+      "income": "45000000", "score": 720, "status": "Đã duyệt",
+      "occupation": "Kỹ sư phần mềm", "work_years": 5, "loan_amount": "500000000",
+      "loan_purpose": "Mua nhà", "debt_ratio": 28, "active_loans": 3, "late_payments": 0,
+      "evaluated_at": "2024-01-15T10:30:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 2,
+    "fields": { "code": "#CR-2024-002", "name": "Trần Thị Bình", "email": "tranthib@email.com",
+      "income": "32000000", "score": 620, "status": "Chờ xử lý",
+      "occupation": "Kế toán", "work_years": 3, "loan_amount": "200000000",
+      "loan_purpose": "Mua xe", "debt_ratio": 32, "active_loans": 2, "late_payments": 1,
+      "evaluated_at": "2024-01-15T09:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 3,
+    "fields": { "code": "#CR-2024-003", "name": "Lê Hoàng Cường", "email": "lehoangcuong@email.com",
+      "income": "18000000", "score": 425, "status": "Từ chối",
+      "occupation": "Công nhân", "work_years": 1, "loan_amount": "100000000",
+      "loan_purpose": "Tiêu dùng", "debt_ratio": 55, "active_loans": 4, "late_payments": 5,
+      "evaluated_at": "2024-01-14T14:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 4,
+    "fields": { "code": "#CR-2024-004", "name": "Phạm Minh Đức", "email": "phamminhduc@email.com",
+      "income": "58000000", "score": 780, "status": "Đã duyệt",
+      "occupation": "Bác sĩ", "work_years": 8, "loan_amount": "800000000",
+      "loan_purpose": "Mua nhà", "debt_ratio": 20, "active_loans": 1, "late_payments": 0,
+      "evaluated_at": "2024-01-14T11:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 5,
+    "fields": { "code": "#CR-2024-005", "name": "Võ Thị Em", "email": "vothiem@email.com",
+      "income": "28000000", "score": 655, "status": "Chờ xử lý",
+      "occupation": "Giáo viên", "work_years": 4, "loan_amount": "150000000",
+      "loan_purpose": "Sửa nhà", "debt_ratio": 30, "active_loans": 2, "late_payments": 0,
+      "evaluated_at": "2024-01-13T16:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 6,
+    "fields": { "code": "#CR-2024-006", "name": "Đặng Văn Giang", "email": "dangvangiang@email.com",
+      "income": "52000000", "score": 710, "status": "Đã duyệt",
+      "occupation": "Kỹ sư phần mềm", "work_years": 6, "loan_amount": "400000000",
+      "loan_purpose": "Kinh doanh", "debt_ratio": 22, "active_loans": 2, "late_payments": 0,
+      "evaluated_at": "2024-01-12T10:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 7,
+    "fields": { "code": "#CR-2024-007", "name": "Hoàng Thị Hoa", "email": "hoangthihoa@email.com",
+      "income": "24000000", "score": 580, "status": "Chờ xử lý",
+      "occupation": "Nhân viên văn phòng", "work_years": 2, "loan_amount": "120000000",
+      "loan_purpose": "Mua xe", "debt_ratio": 38, "active_loans": 2, "late_payments": 2,
+      "evaluated_at": "2024-01-11T09:30:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 8,
+    "fields": { "code": "#CR-2024-008", "name": "Bùi Văn Khoa", "email": "buivankhoa@email.com",
+      "income": "15000000", "score": 395, "status": "Từ chối",
+      "occupation": "Công nhân", "work_years": 1, "loan_amount": "80000000",
+      "loan_purpose": "Tiêu dùng", "debt_ratio": 62, "active_loans": 5, "late_payments": 7,
+      "evaluated_at": "2024-01-10T14:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 9,
+    "fields": { "code": "#CR-2024-009", "name": "Ngô Thị Lan", "email": "ngothilan@email.com",
+      "income": "67000000", "score": 810, "status": "Đã duyệt",
+      "occupation": "Bác sĩ", "work_years": 10, "loan_amount": "1000000000",
+      "loan_purpose": "Mua nhà", "debt_ratio": 18, "active_loans": 1, "late_payments": 0,
+      "evaluated_at": "2024-01-09T11:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 10,
+    "fields": { "code": "#CR-2024-010", "name": "Trịnh Văn Minh", "email": "trinhvanminh@email.com",
+      "income": "41000000", "score": 690, "status": "Đã duyệt",
+      "occupation": "Kế toán", "work_years": 5, "loan_amount": "300000000",
+      "loan_purpose": "Kinh doanh", "debt_ratio": 25, "active_loans": 2, "late_payments": 0,
+      "evaluated_at": "2024-01-08T10:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 11,
+    "fields": { "code": "#CR-2024-011", "name": "Phan Thị Nga", "email": "phanthinga@email.com",
+      "income": "22000000", "score": 510, "status": "Chờ xử lý",
+      "occupation": "Giáo viên", "work_years": 2, "loan_amount": "100000000",
+      "loan_purpose": "Sửa nhà", "debt_ratio": 40, "active_loans": 3, "late_payments": 2,
+      "evaluated_at": "2024-01-07T09:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 12,
+    "fields": { "code": "#CR-2024-012", "name": "Lý Văn Phong", "email": "lyvanphong@email.com",
+      "income": "38000000", "score": 640, "status": "Đã duyệt",
+      "occupation": "Nhân viên văn phòng", "work_years": 4, "loan_amount": "250000000",
+      "loan_purpose": "Mua xe", "debt_ratio": 27, "active_loans": 2, "late_payments": 1,
+      "evaluated_at": "2024-01-06T14:30:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 13,
+    "fields": { "code": "#CR-2024-013", "name": "Đỗ Thị Quỳnh", "email": "dothiquynh@email.com",
+      "income": "19500000", "score": 460, "status": "Từ chối",
+      "occupation": "Kinh doanh tự do", "work_years": 1, "loan_amount": "90000000",
+      "loan_purpose": "Tiêu dùng", "debt_ratio": 50, "active_loans": 3, "late_payments": 4,
+      "evaluated_at": "2024-01-05T10:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 14,
+    "fields": { "code": "#CR-2024-014", "name": "Vũ Hoàng Sơn", "email": "vuhoangson@email.com",
+      "income": "75000000", "score": 840, "status": "Đã duyệt",
+      "occupation": "Kỹ sư phần mềm", "work_years": 12, "loan_amount": "1200000000",
+      "loan_purpose": "Mua nhà", "debt_ratio": 15, "active_loans": 1, "late_payments": 0,
+      "evaluated_at": "2024-01-04T09:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 15,
+    "fields": { "code": "#CR-2024-015", "name": "Bùi Thị Thanh", "email": "buithithanh@email.com",
+      "income": "33000000", "score": 605, "status": "Chờ xử lý",
+      "occupation": "Kế toán", "work_years": 3, "loan_amount": "180000000",
+      "loan_purpose": "Sửa nhà", "debt_ratio": 35, "active_loans": 2, "late_payments": 1,
+      "evaluated_at": "2024-01-03T14:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 16,
+    "fields": { "code": "#CR-2024-016", "name": "Hoàng Văn Uy", "email": "hoangvanuy@email.com",
+      "income": "29000000", "score": 555, "status": "Chờ xử lý",
+      "occupation": "Nhân viên văn phòng", "work_years": 2, "loan_amount": "130000000",
+      "loan_purpose": "Tiêu dùng", "debt_ratio": 37, "active_loans": 2, "late_payments": 2,
+      "evaluated_at": "2024-01-02T10:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 17,
+    "fields": { "code": "#CR-2024-017", "name": "Nguyễn Thị Vân", "email": "nguyenthivan@email.com",
+      "income": "48000000", "score": 730, "status": "Đã duyệt",
+      "occupation": "Bác sĩ", "work_years": 7, "loan_amount": "600000000",
+      "loan_purpose": "Mua nhà", "debt_ratio": 22, "active_loans": 2, "late_payments": 0,
+      "evaluated_at": "2024-01-01T09:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 18,
+    "fields": { "code": "#CR-2024-018", "name": "Trần Văn Xuân", "email": "tranvanxuan@email.com",
+      "income": "13000000", "score": 370, "status": "Từ chối",
+      "occupation": "Công nhân", "work_years": 1, "loan_amount": "60000000",
+      "loan_purpose": "Tiêu dùng", "debt_ratio": 70, "active_loans": 6, "late_payments": 9,
+      "evaluated_at": "2023-12-30T14:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 19,
+    "fields": { "code": "#CR-2024-019", "name": "Lê Thị Yến", "email": "lethiyen@email.com",
+      "income": "55000000", "score": 765, "status": "Đã duyệt",
+      "occupation": "Kỹ sư phần mềm", "work_years": 7, "loan_amount": "700000000",
+      "loan_purpose": "Mua nhà", "debt_ratio": 20, "active_loans": 1, "late_payments": 0,
+      "evaluated_at": "2023-12-28T10:00:00+00:00" }
+  },
+  {
+    "model": "dashboard.loanprofile", "pk": 20,
+    "fields": { "code": "#CR-2024-020", "name": "Phạm Quốc Bảo", "email": "phamquocbao@email.com",
+      "income": "36000000", "score": 630, "status": "Chờ xử lý",
+      "occupation": "Kinh doanh tự do", "work_years": 3, "loan_amount": "220000000",
+      "loan_purpose": "Kinh doanh", "debt_ratio": 33, "active_loans": 2, "late_payments": 1,
+      "evaluated_at": "2023-12-25T09:00:00+00:00" }
+  }
+]

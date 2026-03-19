@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard - LEND X</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+
+    .risk-tooltip { display: none; position: absolute; z-index: 50; pointer-events: none; }
+    .risk-bar-wrap:hover .risk-tooltip { display: block; }
+    .risk-bar { transition: filter 0.15s; }
+    .risk-bar-wrap:hover .risk-bar { filter: brightness(1.08); }
+
+    /* Tab bộ lọc */
+    .time-tab {
+        padding: 5px 14px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        transition: all 0.15s;
+    }
+    .time-tab:hover { background: #e5e7eb; color: #374151; }
+    .time-tab.active {
+        background: #2563eb;
+        color: #fff;
+        box-shadow: 0 1px 4px rgba(37,99,235,0.3);
+    }
+
+    /* Row animation */
+    .activity-row { transition: opacity 0.15s; }
+    .activity-row.hidden-row { display: none; }
+    @keyframes fadeSlide {
+        from { opacity: 0; transform: translateY(5px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .activity-row.show-row { animation: fadeSlide 0.2s ease forwards; }
+</style>
+</head>
+
+<body class="bg-gray-50">
+<div class="flex h-screen">
+
+<!-- SIDEBAR -->
+<div class="w-64 bg-slate-800 flex flex-col">
+    <div class="p-6 flex items-center gap-3">
+        <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+        <span class="text-white font-semibold text-lg">LEND X</span>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="{% url 'home' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white">
+            <i data-lucide="layout-dashboard"></i>
+            <span class="text-sm font-medium">Dashboard</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+            <i data-lucide="file-search"></i>
+            <span class="text-sm font-medium">Underwriting</span>
+        </a>
+        <a href="{% url 'profiles' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+            <i data-lucide="users"></i>
+            <span class="text-sm font-medium">Profile list</span>
+        </a>
+    </nav>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b border-gray-100 px-8 py-2 flex items-center gap-2 text-xs text-gray-400">
+        <i data-lucide="home" class="w-3 h-3"></i>
+        <span class="font-medium text-gray-600">Dashboard</span>
+    </div>
+    <header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-slate-700">Dashboard</h1>
+        <div class="flex items-center gap-4">
+            <button class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="bell" class="text-gray-500"></i></button>
+            <button class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="user-circle" class="text-blue-500"></i></button>
+        </div>
+    </header>
+
+    <div class="flex-1 overflow-auto p-8">
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-gray-500 text-sm">Tổng hồ sơ</span>
+                    <i data-lucide="copy" class="text-gray-400"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-800 mb-2">8,542</div>
+                <div class="text-sm text-emerald-500">+12% so với tháng trước</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-gray-500 text-sm">Điểm trung bình</span>
+                    <i data-lucide="trending-up" class="text-gray-400"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-800 mb-2">692</div>
+                <div class="text-sm text-emerald-500">+8 điểm</div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ rủi ro -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+            <h3 class="text-center text-gray-700 font-semibold mb-6">Biểu đồ phân bố rủi ro</h3>
+
+            <div class="flex items-center gap-4 mb-4 risk-bar-wrap relative">
+                <div class="w-28 text-sm text-gray-600 flex-shrink-0">Rủi ro thấp</div>
+                <div class="flex-1 bg-gray-100 rounded-full h-8 overflow-visible relative">
+                    <div class="risk-bar h-full rounded-full bg-emerald-400" style="width:65%"></div>
+                </div>
+                <div class="w-28 text-right text-sm flex-shrink-0">
+                    <span class="font-medium text-gray-800">5,552</span><span class="text-gray-500 ml-1">(65%)</span>
+                </div>
+                <div class="risk-tooltip left-32 -top-36 w-72">
+                    <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                            <span class="font-semibold text-gray-800 text-sm">Rủi ro thấp</span>
+                            <span class="ml-auto text-emerald-600 font-bold text-sm">5,552 hồ sơ (65%)</span>
+                        </div>
+                        <div class="space-y-2 text-xs text-gray-600">
+                            <div class="flex justify-between"><span>Điểm tín dụng</span><span class="font-semibold text-emerald-600">650 – 850</span></div>
+                            <div class="flex justify-between"><span>Tỷ lệ nợ / thu nhập</span><span class="font-semibold text-emerald-600">≤ 25%</span></div>
+                            <div class="flex justify-between"><span>Lịch sử thanh toán</span><span class="font-semibold text-emerald-600">Không nợ quá hạn</span></div>
+                            <div class="flex justify-between"><span>Thu nhập tối thiểu</span><span class="font-semibold text-emerald-600">≥ 30 triệu/tháng</span></div>
+                            <div class="border-t border-gray-100 pt-2 mt-2 flex justify-between"><span class="text-gray-500">Tỷ lệ phê duyệt</span><span class="font-bold text-emerald-600">92%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 mb-4 risk-bar-wrap relative">
+                <div class="w-28 text-sm text-gray-600 flex-shrink-0">Rủi ro trung bình</div>
+                <div class="flex-1 bg-gray-100 rounded-full h-8 overflow-visible relative">
+                    <div class="risk-bar h-full rounded-full bg-amber-400" style="width:25%"></div>
+                </div>
+                <div class="w-28 text-right text-sm flex-shrink-0">
+                    <span class="font-medium text-gray-800">2,136</span><span class="text-gray-500 ml-1">(25%)</span>
+                </div>
+                <div class="risk-tooltip left-32 -top-36 w-72">
+                    <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                            <span class="font-semibold text-gray-800 text-sm">Rủi ro trung bình</span>
+                            <span class="ml-auto text-amber-600 font-bold text-sm">2,136 hồ sơ (25%)</span>
+                        </div>
+                        <div class="space-y-2 text-xs text-gray-600">
+                            <div class="flex justify-between"><span>Điểm tín dụng</span><span class="font-semibold text-amber-600">500 – 649</span></div>
+                            <div class="flex justify-between"><span>Tỷ lệ nợ / thu nhập</span><span class="font-semibold text-amber-600">25% – 40%</span></div>
+                            <div class="flex justify-between"><span>Lịch sử thanh toán</span><span class="font-semibold text-amber-600">1–2 lần quá hạn</span></div>
+                            <div class="flex justify-between"><span>Thu nhập tối thiểu</span><span class="font-semibold text-amber-600">15 – 30 triệu/tháng</span></div>
+                            <div class="border-t border-gray-100 pt-2 mt-2 flex justify-between"><span class="text-gray-500">Tỷ lệ phê duyệt</span><span class="font-bold text-amber-600">58%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 risk-bar-wrap relative">
+                <div class="w-28 text-sm text-gray-600 flex-shrink-0">Rủi ro cao</div>
+                <div class="flex-1 bg-gray-100 rounded-full h-8 overflow-visible relative">
+                    <div class="risk-bar h-full rounded-full bg-red-400" style="width:10%"></div>
+                </div>
+                <div class="w-28 text-right text-sm flex-shrink-0">
+                    <span class="font-medium text-gray-800">854</span><span class="text-gray-500 ml-1">(10%)</span>
+                </div>
+                <div class="risk-tooltip left-32 -top-36 w-72">
+                    <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                            <span class="font-semibold text-gray-800 text-sm">Rủi ro cao</span>
+                            <span class="ml-auto text-red-600 font-bold text-sm">854 hồ sơ (10%)</span>
+                        </div>
+                        <div class="space-y-2 text-xs text-gray-600">
+                            <div class="flex justify-between"><span>Điểm tín dụng</span><span class="font-semibold text-red-600">300 – 499</span></div>
+                            <div class="flex justify-between"><span>Tỷ lệ nợ / thu nhập</span><span class="font-semibold text-red-600">&gt; 40%</span></div>
+                            <div class="flex justify-between"><span>Lịch sử thanh toán</span><span class="font-semibold text-red-600">Nhiều lần quá hạn</span></div>
+                            <div class="flex justify-between"><span>Thu nhập tối thiểu</span><span class="font-semibold text-red-600">&lt; 15 triệu/tháng</span></div>
+                            <div class="border-t border-gray-100 pt-2 mt-2 flex justify-between"><span class="text-gray-500">Tỷ lệ phê duyệt</span><span class="font-bold text-red-600">12%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== HOẠT ĐỘNG GẦN ĐÂY + BỘ LỌC THỜI GIAN ===== -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <h3 class="text-gray-800 font-semibold">Hoạt động gần đây</h3>
+
+                    <!-- Tab bộ lọc thời gian -->
+                    <div class="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+                        <button class="time-tab active" data-days="7"  onclick="filterTime(this)">7 ngày</button>
+                        <button class="time-tab"        data-days="30" onclick="filterTime(this)">30 ngày</button>
+                        <button class="time-tab"        data-days="90" onclick="filterTime(this)">3 tháng</button>
+                    </div>
+                </div>
+
+                <a href="{% url 'profiles' %}" class="text-blue-500 text-sm flex items-center gap-1 hover:text-blue-600 hover:underline transition-colors">
+                    Xem tất cả →
+                </a>
+            </div>
+
+            <!-- Dòng thông tin lọc -->
+            <div class="flex items-center gap-2 mb-4 px-1">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-gray-400 flex-shrink-0"></i>
+                <span id="filter-label" class="text-xs text-gray-400">Hiển thị 7 ngày gần nhất</span>
+                <span id="filter-count" class="ml-auto text-xs font-semibold text-gray-500"></span>
+            </div>
+
+            <!-- Header cột -->
+            <div class="grid grid-cols-4 text-xs text-gray-400 font-semibold uppercase mb-1 px-2">
+                <div>Khách hàng</div>
+                <div>Điểm số</div>
+                <div>Mức rủi ro</div>
+                <div class="text-right">Ngày đánh giá</div>
+            </div>
+
+            <!-- Danh sách — ngày được render bằng JS theo ngày thực tế hôm nay -->
+            <div id="activity-list"></div>
+
+            <!-- Empty state -->
+            <div id="empty-state" class="hidden text-center py-10 text-gray-400">
+                <i data-lucide="calendar-x" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                <p class="text-sm">Không có hoạt động nào trong khoảng thời gian này</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ===== DỮ LIỆU — daysAgo tính từ HÔM NAY =====
+// 7 ngày:  daysAgo 0–6   → hiện ở cả 3 tab
+// 30 ngày: daysAgo 7–29  → hiện ở tab 30 ngày & 3 tháng
+// 3 tháng: daysAgo 30–89 → chỉ hiện ở tab 3 tháng
+const ACTIVITIES = [
+    { name: 'Nguyễn Văn An',   score: 745, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 0  },
+    { name: 'Trần Thị Bình',   score: 620, risk: 'Trung bình', riskColor: 'amber',   daysAgo: 1  },
+    { name: 'Lê Hoàng Cường',  score: 425, risk: 'Cao',        riskColor: 'red',     daysAgo: 2  },
+    { name: 'Phạm Minh Đức',   score: 780, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 3  },
+    { name: 'Võ Thị Em',       score: 655, risk: 'Trung bình', riskColor: 'amber',   daysAgo: 5  },
+    { name: 'Đặng Quốc Huy',   score: 710, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 6  },
+    { name: 'Hoàng Gia Bảo',   score: 430, risk: 'Cao',        riskColor: 'red',     daysAgo: 10 },
+    { name: 'Ngô Thị Lan',     score: 810, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 18 },
+    { name: 'Trịnh Văn Minh',  score: 690, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 25 },
+    { name: 'Phan Thị Nga',    score: 510, risk: 'Trung bình', riskColor: 'amber',   daysAgo: 45 },
+    { name: 'Vũ Hoàng Sơn',    score: 840, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 70 },
+    { name: 'Lý Văn Phong',    score: 640, risk: 'Thấp',      riskColor: 'emerald', daysAgo: 85 },
+];
+
+// Hàm tính ngày thực từ daysAgo
+function dateFromDaysAgo(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d;
+}
+
+// Format ngày hiển thị: dd/mm/yyyy
+function formatDate(d) {
+    return String(d.getDate()).padStart(2,'0') + '/' +
+           String(d.getMonth()+1).padStart(2,'0') + '/' +
+           d.getFullYear();
+}
+
+// Format ISO cho data-date
+function isoDate(d) {
+    return d.getFullYear() + '-' +
+           String(d.getMonth()+1).padStart(2,'0') + '-' +
+           String(d.getDate()).padStart(2,'0');
+}
+
+// Màu badge theo điểm
+function scoreColor(score) {
+    if (score >= 600) return 'emerald';
+    if (score >= 500) return 'amber';
+    return 'red';
+}
+
+// Render toàn bộ danh sách vào #activity-list
+function renderList() {
+    const list = document.getElementById('activity-list');
+    list.innerHTML = ACTIVITIES.map((a, idx) => {
+        const d      = dateFromDaysAgo(a.daysAgo);
+        const iso    = isoDate(d);
+        const label  = formatDate(d);
+        const sc     = scoreColor(a.score);
+        const border = idx < ACTIVITIES.length - 1 ? 'border-b border-gray-50' : '';
+        return `
+        <div class="activity-row flex items-center py-3.5 ${border} hover:bg-gray-50/60 rounded-lg px-2 transition-colors" data-date="${iso}">
+            <div class="flex items-center gap-3 flex-1">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i data-lucide="user" class="w-4 h-4 text-gray-400"></i>
+                </div>
+                <span class="text-sm text-gray-700 font-medium">${a.name}</span>
+            </div>
+            <div class="flex-1">
+                <span class="px-3 py-1 rounded-full bg-${sc}-100 text-${sc}-700 text-sm font-semibold">${a.score}</span>
+            </div>
+            <div class="flex-1">
+                <span class="px-3 py-1 rounded-full bg-${a.riskColor}-100 text-${a.riskColor}-700 text-xs font-medium">${a.risk}</span>
+            </div>
+            <div class="flex-1 text-right text-sm text-gray-400">${label}</div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+}
+
+// Dùng ngày thực tế hôm nay làm gốc tính
+const LATEST = new Date();
+LATEST.setHours(23, 59, 59, 0); // cuối ngày hôm nay
+
+const LABEL = {
+    7:  'Hiển thị 7 ngày gần nhất',
+    30: 'Hiển thị 30 ngày gần nhất',
+    90: 'Hiển thị 3 tháng gần nhất',
+};
+
+function filterTime(btn) {
+    const days = parseInt(btn.dataset.days);
+
+    // Active tab
+    document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Tính ngưỡng ngày
+    const cutoff = new Date(LATEST);
+    cutoff.setDate(cutoff.getDate() - days);
+
+    // Hiện / ẩn từng row
+    const rows = document.querySelectorAll('.activity-row');
+    let count = 0;
+
+    rows.forEach(row => {
+        const d = new Date(row.dataset.date);
+        row.classList.remove('show-row', 'hidden-row');
+
+        if (d >= cutoff) {
+            void row.offsetWidth;
+            row.classList.add('show-row');
+            count++;
+        } else {
+            row.classList.add('hidden-row');
+        }
+    });
+
+    // Cập nhật label
+    document.getElementById('filter-label').textContent = LABEL[days];
+    document.getElementById('filter-count').textContent = count + ' hoạt động';
+
+    // Empty state
+    document.getElementById('empty-state').classList.toggle('hidden', count > 0);
+
+    lucide.createIcons();
+}
+
+// Render danh sách rồi lọc mặc định 7 ngày
+renderList();
+filterTime(document.querySelector('.time-tab[data-days="7"]'));
+</script>
+
+</body>
+</html>

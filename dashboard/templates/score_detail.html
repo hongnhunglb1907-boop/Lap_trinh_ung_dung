@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân tích chi tiết - {{ profile.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Factor bar animation */
+        @keyframes growBar {
+            from { width: 0; }
+        }
+        .factor-bar { animation: growBar 0.6s ease forwards; }
+
+        /* Stagger rows */
+        .factor-row:nth-child(1) .factor-bar { animation-delay: 0.05s; }
+        .factor-row:nth-child(2) .factor-bar { animation-delay: 0.15s; }
+        .factor-row:nth-child(3) .factor-bar { animation-delay: 0.25s; }
+        .factor-row:nth-child(4) .factor-bar { animation-delay: 0.35s; }
+        .factor-row:nth-child(5) .factor-bar { animation-delay: 0.45s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .factor-row {
+            animation: fadeUp 0.3s ease forwards;
+            opacity: 0;
+        }
+        .factor-row:nth-child(1) { animation-delay: 0.05s; }
+        .factor-row:nth-child(2) { animation-delay: 0.12s; }
+        .factor-row:nth-child(3) { animation-delay: 0.19s; }
+        .factor-row:nth-child(4) { animation-delay: 0.26s; }
+        .factor-row:nth-child(5) { animation-delay: 0.33s; }
+
+        /* Score tally counter */
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.85); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .tally-number { animation: countUp 0.4s 0.5s ease both; }
+
+        .info-card { transition: transform 0.15s, box-shadow 0.15s; }
+        .info-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+<div class="flex h-screen">
+
+    <!-- SIDEBAR -->
+    <div class="w-64 bg-slate-800 flex flex-col flex-shrink-0">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            <span class="text-white font-semibold text-lg">LEND X</span>
+        </div>
+        <nav class="flex-1 px-3 py-4 space-y-1">
+            <a href="{% url 'home' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+                <i data-lucide="file-search"></i>
+                <span class="text-sm font-medium">Underwriting</span>
+            </a>
+            <a href="{% url 'profiles' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white">
+                <i data-lucide="users"></i>
+                <span class="text-sm font-medium">Profile list</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- MAIN -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Breadcrumb -->
+        <div class="bg-white border-b border-gray-100 px-8 py-2 flex items-center gap-2 text-xs text-gray-400">
+            <a href="{% url 'home' %}" class="flex items-center gap-1 hover:text-blue-500 transition-colors">
+                <i data-lucide="home" class="w-3 h-3"></i>
+                <span>Dashboard</span>
+            </a>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <a href="{% url 'profiles' %}" class="hover:text-blue-500 transition-colors">Danh sách hồ sơ</a>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <a href="{% url 'score_result' profile.pk %}" class="hover:text-blue-500 transition-colors">{{ profile.name }}</a>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <span class="font-medium text-gray-600">Phân tích chi tiết</span>
+        </div>
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'score_result' profile.pk %}"
+                   class="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4 text-gray-600"></i>
+                </a>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">Chi tiết phân tích hồ sơ</h1>
+                    <p class="text-sm text-gray-400">Phân tích yếu tố ảnh hưởng đến điểm tín dụng</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Xuất báo cáo
+                </button>
+                <button class="p-2 hover:bg-gray-100 rounded-full">
+                    <i data-lucide="bell" class="text-gray-500 w-5 h-5"></i>
+                </button>
+                <button class="p-2 hover:bg-gray-100 rounded-full">
+                    <i data-lucide="user-circle" class="text-blue-500 w-6 h-6"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-auto p-8">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid grid-cols-3 gap-6">
+
+                    <!-- ===== CỘT TRÁI: Thông tin khách hàng ===== -->
+                    <div class="space-y-4">
+
+                        <!-- Profile card -->
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{{ profile.code }}</span>
+                            </div>
+
+                            <!-- Avatar -->
+                            <div class="flex flex-col items-center mb-5">
+                                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                                    <i data-lucide="user-circle" class="w-10 h-10 text-blue-400"></i>
+                                </div>
+                                <h3 class="font-bold text-gray-900 text-base">{{ profile.name }}</h3>
+                                <p class="text-sm text-gray-400">{{ profile.email }}</p>
+                            </div>
+
+                            <!-- Info rows -->
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between py-2 border-b border-gray-50">
+                                    <span class="text-gray-400">Nghề nghiệp</span>
+                                    <span class="font-medium text-gray-700">{{ profile.occupation }}</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-gray-50">
+                                    <span class="text-gray-400">Thu nhập/tháng</span>
+                                    <span class="font-medium text-gray-700">{{ profile.income|floatformat:"0g" }} VNĐ</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-gray-50">
+                                    <span class="text-gray-400">Thời gian làm việc</span>
+                                    <span class="font-medium text-gray-700">{{ profile.work_years }} năm</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-gray-50">
+                                    <span class="text-gray-400">Số tiền vay</span>
+                                    <span class="font-medium text-gray-700">{{ profile.loan_amount|floatformat:"0g" }} VNĐ</span>
+                                </div>
+                                <div class="flex justify-between py-2">
+                                    <span class="text-gray-400">Mục đích vay</span>
+                                    <span class="font-medium text-gray-700">{{ profile.loan_purpose }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Score + risk mini -->
+                            <div class="mt-4 p-3 rounded-xl
+                                {% if profile.score >= 650 %}bg-emerald-50 border border-emerald-100
+                                {% elif profile.score >= 500 %}bg-amber-50 border border-amber-100
+                                {% else %}bg-red-50 border border-red-100{% endif %}">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-500">Điểm tín dụng</span>
+                                    <span class="text-2xl font-bold
+                                        {% if profile.score >= 650 %}text-emerald-500
+                                        {% elif profile.score >= 500 %}text-amber-500
+                                        {% else %}text-red-500{% endif %}">
+                                        {{ profile.score }}
+                                    </span>
+                                </div>
+                                <div class="text-xs font-medium mt-1
+                                    {% if profile.score >= 650 %}text-emerald-600
+                                    {% elif profile.score >= 500 %}text-amber-600
+                                    {% else %}text-red-600{% endif %}">
+                                    Rủi ro {{ profile.get_risk_level }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Model info -->
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="cpu" class="w-4 h-4 text-purple-500"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-700">Mô hình AI: CreditScore v2.5</span>
+                            </div>
+                            <div class="space-y-1 text-xs text-gray-500">
+                                <div class="flex justify-between">
+                                    <span>Độ chính xác</span>
+                                    <span class="font-semibold text-emerald-600">95.8%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Đánh giá lúc</span>
+                                    <span class="font-medium text-gray-600">{{ profile.evaluated_at|date:"d/m/Y H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ===== CỘT PHẢI: Các yếu tố + tổng hợp ===== -->
+                    <div class="col-span-2 space-y-5">
+
+                        <!-- Yếu tố ảnh hưởng -->
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                            <div class="flex items-center justify-between mb-5">
+                                <h3 class="font-semibold text-gray-800">Yếu tố ảnh hưởng đến điểm số</h3>
+                                <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center cursor-help" title="Các yếu tố được tính bởi mô hình AI">
+                                    <i data-lucide="info" class="w-3 h-3 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                {% for factor in factors %}
+                                <div class="factor-row rounded-xl border p-4
+                                    {% if factor.type == 'positive' %}bg-emerald-50 border-emerald-100
+                                    {% elif factor.type == 'negative' %}bg-red-50 border-red-100
+                                    {% else %}bg-amber-50 border-amber-100{% endif %}">
+
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            {% if factor.type == 'positive' %}
+                                                <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+                                            {% elif factor.type == 'negative' %}
+                                                <i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i>
+                                            {% else %}
+                                                <i data-lucide="minus" class="w-4 h-4 text-amber-500"></i>
+                                            {% endif %}
+                                            <span class="text-sm font-semibold
+                                                {% if factor.type == 'positive' %}text-emerald-800
+                                                {% elif factor.type == 'negative' %}text-red-800
+                                                {% else %}text-amber-800{% endif %}">
+                                                {{ factor.label }}
+                                            </span>
+                                        </div>
+                                        <span class="text-sm font-bold px-2.5 py-0.5 rounded-lg
+                                            {% if factor.points > 0 %}bg-emerald-500 text-white
+                                            {% elif factor.points < 0 %}bg-red-500 text-white
+                                            {% else %}bg-amber-500 text-white{% endif %}">
+                                            {% if factor.points > 0 %}+{{ factor.points }}{% else %}{{ factor.points }}{% endif %} điểm
+                                        </span>
+                                    </div>
+
+                                    <!-- Progress bar -->
+                                    <div class="h-1.5 rounded-full bg-white/60 mb-2 overflow-hidden">
+                                        <div class="factor-bar h-full rounded-full
+                                            {% if factor.type == 'positive' %}bg-emerald-400
+                                            {% elif factor.type == 'negative' %}bg-red-400
+                                            {% else %}bg-amber-400{% endif %}"
+                                            style="width: {{ factor.points|floatformat:0 | default:0 }}%;
+                                                   width: {% if factor.points < 0 %}{{ factor.points|stringformat:'d'|slice:'1:' }}{% else %}{{ factor.points }}{% endif %}%;
+                                                   max-width: 100%;">
+                                        </div>
+                                    </div>
+
+                                    <p class="text-xs
+                                        {% if factor.type == 'positive' %}text-emerald-700
+                                        {% elif factor.type == 'negative' %}text-red-700
+                                        {% else %}text-amber-700{% endif %}">
+                                        {{ factor.desc }}
+                                    </p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Tổng hợp tính điểm -->
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                            <h3 class="font-semibold text-gray-800 mb-4 text-center">Tổng hợp tính điểm</h3>
+                            <div class="space-y-3">
+
+                                <div class="flex justify-between items-center py-2.5 px-4 bg-gray-50 rounded-xl">
+                                    <span class="text-sm text-gray-500">Điểm cơ sở</span>
+                                    <span class="tally-number font-semibold text-gray-700">{{ base_score }}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center py-2.5 px-4 bg-emerald-50 rounded-xl">
+                                    <span class="text-sm text-emerald-700">Tổng điểm cộng</span>
+                                    <span class="tally-number font-bold text-emerald-600">+{{ total_plus }}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center py-2.5 px-4 bg-red-50 rounded-xl">
+                                    <span class="text-sm text-red-700">Tổng điểm trừ</span>
+                                    <span class="tally-number font-bold text-red-600">{{ total_minus }}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center py-3 px-4 rounded-xl border-2
+                                    {% if profile.score >= 650 %}border-emerald-200 bg-emerald-50
+                                    {% elif profile.score >= 500 %}border-amber-200 bg-amber-50
+                                    {% else %}border-red-200 bg-red-50{% endif %}">
+                                    <span class="text-sm font-semibold text-gray-700">Điểm cuối cùng</span>
+                                    <span class="tally-number text-2xl font-bold
+                                        {% if profile.score >= 650 %}text-emerald-500
+                                        {% elif profile.score >= 500 %}text-amber-500
+                                        {% else %}text-red-500{% endif %}">
+                                        {{ profile.score }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khuyến nghị -->
+                        <div class="bg-amber-50 border border-amber-100 rounded-2xl p-5">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
+                                <span class="text-sm font-semibold text-amber-800">Khuyến nghị</span>
+                            </div>
+                            <p class="text-sm text-amber-700 leading-relaxed">
+                                {% if profile.score >= 650 %}
+                                    Khách hàng có hồ sơ tín dụng tốt với thu nhập ổn định và lịch sử thanh toán đúng hạn.
+                                    {% if profile.debt_ratio > 25 %}Tuy nhiên, nên lưu ý tỷ lệ nợ hiện tại.{% endif %}
+                                    Đề xuất phê duyệt với mức lãi suất ưu đãi và theo dõi định kỳ.
+                                {% elif profile.score >= 500 %}
+                                    Khách hàng ở mức tín dụng trung bình, cần thêm thông tin để đánh giá.
+                                    Đề xuất phê duyệt có điều kiện với mức lãi suất thông thường và giám sát chặt hơn.
+                                {% else %}
+                                    Hồ sơ có nhiều điểm rủi ro cần lưu ý. Đề xuất yêu cầu bổ sung tài sản đảm bảo
+                                    hoặc người bảo lãnh. Cân nhắc từ chối nếu không đáp ứng điều kiện bổ sung.
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-3 justify-end">
+                            <a href="{% url 'score_result' profile.pk %}"
+                               class="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                Quay lại kết quả
+                            </a>
+                            <a href="{% url 'profiles' %}"
+                               class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <i data-lucide="list" class="w-4 h-4"></i>
+                                Danh sách hồ sơ
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

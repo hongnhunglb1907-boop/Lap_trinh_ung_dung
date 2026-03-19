@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile List - LEND X</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .whitespace-nowrap { white-space: nowrap; }
+        .col-khach-hang { min-width: 280px; }
+        #filter-dropdown { display: none; }
+        #filter-dropdown.open { display: block; }
+
+        /* Gợi ý tìm kiếm */
+        #suggest-box { display: none; }
+        #suggest-box.open { display: block; }
+        .suggest-item:hover { background: #eff6ff; }
+        .suggest-item.active { background: #eff6ff; }
+
+        /* Highlight từ khớp */
+        .highlight { color: #2563eb; font-weight: 600; }
+
+        /* Score badge nhỏ trong gợi ý */
+        .score-badge-green  { background:#dcfce7; color:#16a34a; }
+        .score-badge-orange { background:#ffedd5; color:#ea580c; }
+        .score-badge-red    { background:#fee2e2; color:#dc2626; }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="w-64 bg-slate-800 flex flex-col shadow-xl z-20">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            <span class="text-white font-semibold text-lg">LEND X</span>
+        </div>
+        <nav class="flex-1 px-3 py-4 space-y-1">
+            <a href="{% url 'home' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+                <i data-lucide="file-search"></i>
+                <span class="text-sm font-medium">Underwriting</span>
+            </a>
+            <a href="{% url 'profiles' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white">
+                <i data-lucide="users"></i>
+                <span class="text-sm font-medium">Profile list</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- ===== MAIN ===== -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Breadcrumb -->
+        <div class="bg-white border-b border-gray-100 px-8 py-2 flex items-center gap-2 text-xs text-gray-400">
+            <a href="{% url 'home' %}" class="flex items-center gap-1 hover:text-blue-500 transition-colors">
+                <i data-lucide="home" class="w-3 h-3"></i>
+                <span>Dashboard</span>
+            </a>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <span class="font-medium text-gray-600">Danh sách hồ sơ</span>
+        </div>
+        <!-- Header -->
+        <header class="bg-white px-8 py-6 flex items-center justify-between border-b border-gray-100">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-700">Danh sách hồ sơ</h1>
+                <p class="text-sm text-gray-500 mt-1">Quản lý tất cả hồ sơ khách hàng</p>
+            </div>
+
+            <div class="flex items-center gap-4">
+
+                <!-- ===== Ô TÌM KIẾM CÓ GỢI Ý ===== -->
+                <form method="GET" action="{% url 'profiles' %}" id="search-form">
+                    <input type="hidden" name="status" value="{{ status_filter }}">
+                    <input type="hidden" name="sort"   value="{{ sort_order }}">
+
+                    <div class="relative" id="search-wrapper">
+
+                        <!-- Icon search -->
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10"></i>
+
+                        <!-- Input -->
+                        <input
+                            type="text"
+                            id="search-input"
+                            name="q"
+                            value="{{ search_query }}"
+                            placeholder="Tìm theo tên, email, mã hồ sơ, trạng thái, điểm số..."
+                            class="pl-10 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm w-96 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-gray-50 transition-all"
+                            autocomplete="off"
+                        >
+
+                        <!-- Nút xoá -->
+                        {% if search_query %}
+                        <a href="{% url 'profiles' %}?status={{ status_filter }}&sort={{ sort_order }}"
+                           class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </a>
+                        {% endif %}
+
+                        <!-- ===== DROPDOWN GỢI Ý ===== -->
+                        <div id="suggest-box"
+                             class="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+
+                            <!-- Loading state -->
+                            <div id="suggest-loading" class="hidden px-4 py-3 flex items-center gap-2 text-sm text-gray-400">
+                                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                Đang tìm kiếm...
+                            </div>
+
+                            <!-- Danh sách gợi ý -->
+                            <ul id="suggest-list" class="py-1"></ul>
+
+                            <!-- Footer gợi ý -->
+                            <div id="suggest-footer" class="hidden border-t border-gray-100 px-4 py-2.5">
+                                <button type="submit"
+                                        class="w-full text-center text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center justify-center gap-1.5">
+                                    <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                                    <span id="suggest-footer-text">Tìm kiếm tất cả kết quả</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+
+                <button class="p-2 text-gray-400 hover:bg-gray-100 rounded-full">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-full">
+                    <i data-lucide="user-circle" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Body -->
+        <div class="flex-1 overflow-auto p-8 bg-white/50">
+
+            <!-- ===== TAB + BỘ LỌC ===== -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm mb-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+
+                    <a href="{% url 'profiles' %}?status=all&q={{ search_query }}&sort={{ sort_order }}"
+                       class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm
+                              {% if status_filter == 'all' %}bg-blue-50 text-blue-600{% else %}bg-gray-50 text-gray-600 hover:bg-gray-100{% endif %}">
+                        Tất cả
+                        <span class="{% if status_filter == 'all' %}bg-blue-500 text-white{% else %}bg-white border border-gray-200 text-gray-400{% endif %} px-2 py-0.5 rounded-lg text-xs font-bold">{{ counts.all }}</span>
+                    </a>
+
+                    <a href="{% url 'profiles' %}?status=approved&q={{ search_query }}&sort={{ sort_order }}"
+                       class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm
+                              {% if status_filter == 'approved' %}bg-blue-50 text-blue-600{% else %}bg-gray-50 text-gray-600 hover:bg-gray-100{% endif %}">
+                        Đã duyệt
+                        <span class="{% if status_filter == 'approved' %}bg-blue-500 text-white{% else %}bg-white border border-gray-200 text-gray-400{% endif %} px-2 py-0.5 rounded-lg text-xs font-bold">{{ counts.approved }}</span>
+                    </a>
+
+                    <a href="{% url 'profiles' %}?status=pending&q={{ search_query }}&sort={{ sort_order }}"
+                       class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm
+                              {% if status_filter == 'pending' %}bg-blue-50 text-blue-600{% else %}bg-gray-50 text-gray-600 hover:bg-gray-100{% endif %}">
+                        Chờ xử lý
+                        <span class="{% if status_filter == 'pending' %}bg-blue-500 text-white{% else %}bg-white border border-gray-200 text-gray-400{% endif %} px-2 py-0.5 rounded-lg text-xs font-bold">{{ counts.pending }}</span>
+                    </a>
+
+                    <a href="{% url 'profiles' %}?status=rejected&q={{ search_query }}&sort={{ sort_order }}"
+                       class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm
+                              {% if status_filter == 'rejected' %}bg-blue-50 text-blue-600{% else %}bg-gray-50 text-gray-600 hover:bg-gray-100{% endif %}">
+                        Từ chối
+                        <span class="{% if status_filter == 'rejected' %}bg-blue-500 text-white{% else %}bg-white border border-gray-200 text-gray-400{% endif %} px-2 py-0.5 rounded-lg text-xs font-bold">{{ counts.rejected }}</span>
+                    </a>
+
+                </div>
+
+                <!-- Nút Bộ lọc -->
+                <div class="relative">
+                    <button id="filter-btn"
+                            class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm border transition-colors
+                                   {% if sort_order %}bg-blue-50 text-blue-600 border-blue-200{% else %}bg-gray-50 text-slate-700 border-transparent hover:border-gray-200{% endif %}">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        Bộ lọc
+                        {% if sort_order %}<span class="w-2 h-2 rounded-full bg-blue-500"></span>{% endif %}
+                    </button>
+
+                    <div id="filter-dropdown"
+                         class="absolute right-0 top-12 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl w-56 p-3">
+                        <p class="text-xs font-semibold text-gray-400 uppercase px-2 mb-2">Sắp xếp theo điểm số</p>
+                        <a href="{% url 'profiles' %}?status={{ status_filter }}&q={{ search_query }}&sort=score_desc"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                                  {% if sort_order == 'score_desc' %}bg-blue-50 text-blue-600{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
+                            <i data-lucide="arrow-down-wide-narrow" class="w-4 h-4"></i>
+                            Điểm cao → thấp
+                            {% if sort_order == 'score_desc' %}<i data-lucide="check" class="w-4 h-4 ml-auto text-blue-500"></i>{% endif %}
+                        </a>
+                        <a href="{% url 'profiles' %}?status={{ status_filter }}&q={{ search_query }}&sort=score_asc"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                                  {% if sort_order == 'score_asc' %}bg-blue-50 text-blue-600{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
+                            <i data-lucide="arrow-up-wide-narrow" class="w-4 h-4"></i>
+                            Điểm thấp → cao
+                            {% if sort_order == 'score_asc' %}<i data-lucide="check" class="w-4 h-4 ml-auto text-blue-500"></i>{% endif %}
+                        </a>
+                        {% if sort_order %}
+                        <div class="border-t border-gray-100 mt-2 pt-2">
+                            <a href="{% url 'profiles' %}?status={{ status_filter }}&q={{ search_query }}"
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+                                <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                Xoá bộ lọc
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông báo kết quả tìm kiếm -->
+            {% if search_query %}
+            <div class="mb-4 flex items-center gap-2 text-sm text-gray-500">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                Kết quả cho "<span class="font-semibold text-gray-800">{{ search_query }}</span>"
+                — tìm thấy <span class="font-semibold text-blue-600">{{ paginator.count }}</span> hồ sơ
+            </div>
+            {% endif %}
+
+            <!-- ===== BẢNG DỮ LIỆU ===== -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-100 bg-gray-50/50">
+                                <th class="text-left py-4 px-6 text-xs font-semibold text-gray-400 uppercase whitespace-nowrap">Mã hồ sơ</th>
+                                <th class="text-left py-4 px-6 text-xs font-semibold text-gray-400 uppercase col-khach-hang whitespace-nowrap">Tên khách hàng</th>
+                                <th class="text-left py-4 px-6 text-xs font-semibold text-gray-400 uppercase whitespace-nowrap">Thu nhập</th>
+                                <th class="text-left py-4 px-6 text-xs font-semibold text-gray-400 uppercase whitespace-nowrap">
+                                    Điểm số
+                                    {% if sort_order == 'score_desc' %}<i data-lucide="arrow-down" class="w-3 h-3 inline ml-1 text-blue-500"></i>
+                                    {% elif sort_order == 'score_asc' %}<i data-lucide="arrow-up" class="w-3 h-3 inline ml-1 text-blue-500"></i>
+                                    {% endif %}
+                                </th>
+                                <th class="text-left py-4 px-6 text-xs font-semibold text-gray-400 uppercase whitespace-nowrap">Trạng thái</th>
+                                <th class="text-left py-4 px-6 text-xs font-semibold text-gray-400 uppercase whitespace-nowrap">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            {% for profile in profiles %}
+                            <tr class="hover:bg-blue-50/50 transition-colors">
+                                <td class="py-4 px-6 text-sm font-medium text-blue-500 whitespace-nowrap">{{ profile.code }}</td>
+                                <td class="py-4 px-6 col-khach-hang">
+                                    <div class="flex items-center gap-3 whitespace-nowrap">
+                                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                            <i data-lucide="user" class="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">{{ profile.name }}</div>
+                                            <div class="text-xs text-gray-400">{{ profile.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 whitespace-nowrap">{{ profile.income|floatformat:"0g" }} VNĐ</td>
+                                <td class="py-4 px-6">
+                                    {% if profile.score >= 600 %}
+                                        <span class="inline-flex px-3 py-1 bg-green-100 text-green-700 font-semibold rounded-md text-sm">{{ profile.score }}</span>
+                                    {% elif profile.score >= 500 %}
+                                        <span class="inline-flex px-3 py-1 bg-orange-100 text-orange-700 font-semibold rounded-md text-sm">{{ profile.score }}</span>
+                                    {% else %}
+                                        <span class="inline-flex px-3 py-1 bg-red-100 text-red-700 font-semibold rounded-md text-sm">{{ profile.score }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6">
+                                    {% if profile.status == 'Đã duyệt' %}
+                                        <span class="inline-flex px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium border border-green-100">Đã duyệt</span>
+                                    {% elif profile.status == 'Chờ xử lý' %}
+                                        <span class="inline-flex px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium border border-blue-100">Chờ xử lý</span>
+                                    {% else %}
+                                        <span class="inline-flex px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium border border-red-100">Từ chối</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6 whitespace-nowrap">
+                                    <a href="{% url 'score_result' profile.pk %}" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-100 transition-colors">
+                                        Xem kết quả →
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-16 text-gray-400">
+                                    <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 opacity-30"></i>
+                                    <p class="text-sm font-medium">Không tìm thấy hồ sơ nào</p>
+                                    {% if search_query %}<p class="text-xs mt-1">Thử tìm kiếm với từ khoá khác</p>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== PHÂN TRANG ===== -->
+            <div class="flex items-center justify-between mt-6 bg-white border border-gray-100 rounded-xl px-6 py-4 shadow-sm">
+                <span class="text-sm text-gray-500 font-medium">
+                    Hiển thị {{ page_obj.start_index }}-{{ page_obj.end_index }} trong tổng số {{ paginator.count }} hồ sơ
+                </span>
+                <div class="flex items-center gap-1">
+                    {% if page_obj.has_previous %}
+                        <a href="?status={{ status_filter }}&q={{ search_query }}&sort={{ sort_order }}&page={{ page_obj.previous_page_number }}"
+                           class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-md">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </a>
+                    {% else %}
+                        <span class="w-8 h-8 flex items-center justify-center text-gray-300 cursor-not-allowed">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </span>
+                    {% endif %}
+
+                    {% for num in paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="w-8 h-8 flex items-center justify-center bg-blue-500 text-white font-medium rounded-md text-sm">{{ num }}</span>
+                        {% elif num == 1 or num == paginator.num_pages or num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                            <a href="?status={{ status_filter }}&q={{ search_query }}&sort={{ sort_order }}&page={{ num }}"
+                               class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-md text-sm">{{ num }}</a>
+                        {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
+                            <span class="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">...</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?status={{ status_filter }}&q={{ search_query }}&sort={{ sort_order }}&page={{ page_obj.next_page_number }}"
+                           class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-md">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    {% else %}
+                        <span class="w-8 h-8 flex items-center justify-center text-gray-300 cursor-not-allowed">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+lucide.createIcons();
+
+/* ======= FILTER DROPDOWN ======= */
+document.getElementById('filter-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('filter-dropdown').classList.toggle('open');
+});
+document.addEventListener('click', function() {
+    document.getElementById('filter-dropdown').classList.remove('open');
+});
+
+/* ======= SEARCH SUGGEST ======= */
+const searchInput  = document.getElementById('search-input');
+const suggestBox   = document.getElementById('suggest-box');
+const suggestList  = document.getElementById('suggest-list');
+const suggestFoot  = document.getElementById('suggest-footer');
+const suggestFootT = document.getElementById('suggest-footer-text');
+const suggestLoad  = document.getElementById('suggest-loading');
+
+let debounceTimer  = null;
+let activeIndex    = -1;
+let currentItems   = [];
+
+// Hàm highlight từ khớp
+function highlight(text, query) {
+    if (!query) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(`(${escaped})`, 'gi'),
+        '<span class="highlight">$1</span>');
+}
+
+// Hàm lấy class màu badge điểm số
+function scoreBadgeClass(score) {
+    if (score >= 600) return 'score-badge-green';
+    if (score >= 500) return 'score-badge-orange';
+    return 'score-badge-red';
+}
+
+// Hàm lấy màu chữ trạng thái
+function statusStyle(status) {
+    if (status === 'Đã duyệt')  return 'color:#16a34a; background:#f0fdf4; border:1px solid #bbf7d0;';
+    if (status === 'Chờ xử lý') return 'color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe;';
+    return 'color:#dc2626; background:#fef2f2; border:1px solid #fecaca;';
+}
+
+// Render danh sách gợi ý
+function renderSuggestions(results, query) {
+    suggestList.innerHTML = '';
+    currentItems = results;
+    activeIndex  = -1;
+
+    if (results.length === 0) {
+        suggestList.innerHTML = `
+            <li class="px-4 py-4 text-center text-sm text-gray-400">
+                <span>Không tìm thấy kết quả nào cho "<strong>${query}</strong>"</span>
+            </li>`;
+        suggestFoot.classList.add('hidden');
+        return;
+    }
+
+    results.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'suggest-item px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors';
+        li.dataset.index = idx;
+        li.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-900">${highlight(item.name, query)}</span>
+                    <span class="text-xs text-gray-400">${highlight(item.code, query)}</span>
+                </div>
+                <div class="text-xs text-gray-400 truncate">${highlight(item.email, query)}</div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${scoreBadgeClass(item.score)}">${item.score}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="${statusStyle(item.status)}">${highlight(item.status, query)}</span>
+            </div>`;
+
+        // Click chọn gợi ý → điền vào input và submit
+        li.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            searchInput.value = item.name;
+            document.getElementById('search-form').submit();
+        });
+
+        suggestList.appendChild(li);
+    });
+
+    // Footer "Xem tất cả kết quả"
+    suggestFootT.textContent = `Xem tất cả ${results.length > 5 ? 'kết quả' : results.length + ' kết quả'} cho "${query}"`;
+    suggestFoot.classList.remove('hidden');
+}
+
+// Gọi API suggest
+function fetchSuggestions(query) {
+    if (!query || query.length < 1) {
+        closeSuggest();
+        return;
+    }
+
+    suggestLoad.classList.remove('hidden');
+    suggestList.innerHTML = '';
+    suggestFoot.classList.add('hidden');
+    suggestBox.classList.add('open');
+
+    fetch(`/profiles/suggest/?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+            suggestLoad.classList.add('hidden');
+            renderSuggestions(data.results, query);
+            lucide.createIcons();
+        })
+        .catch(() => {
+            suggestLoad.classList.add('hidden');
+        });
+}
+
+function closeSuggest() {
+    suggestBox.classList.remove('open');
+    activeIndex = -1;
+}
+
+// Sự kiện gõ phím (debounce 250ms)
+searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const val = this.value.trim();
+    debounceTimer = setTimeout(() => fetchSuggestions(val), 250);
+});
+
+// Điều hướng bằng bàn phím ↑ ↓ Enter Escape
+searchInput.addEventListener('keydown', function(e) {
+    const items = suggestList.querySelectorAll('.suggest-item');
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = Math.min(activeIndex + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = Math.max(activeIndex - 1, -1);
+    } else if (e.key === 'Enter') {
+        if (activeIndex >= 0 && currentItems[activeIndex]) {
+            e.preventDefault();
+            searchInput.value = currentItems[activeIndex].name;
+            closeSuggest();
+            document.getElementById('search-form').submit();
+        }
+        return;
+    } else if (e.key === 'Escape') {
+        closeSuggest();
+        return;
+    }
+
+    // Highlight item active
+    items.forEach((item, i) => {
+        item.classList.toggle('active', i === activeIndex);
+    });
+    if (activeIndex >= 0 && currentItems[activeIndex]) {
+        searchInput.value = currentItems[activeIndex].name;
+    }
+});
+
+// Focus lại thì mở suggest nếu đang có chữ
+searchInput.addEventListener('focus', function() {
+    if (this.value.trim().length >= 1) {
+        fetchSuggestions(this.value.trim());
+    }
+});
+
+// Đóng khi click ra ngoài
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('search-wrapper').contains(e.target)) {
+        closeSuggest();
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả chấm điểm - {{ profile.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Animated score number */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .score-number { animation: countUp 0.5s ease forwards; }
+
+        /* Score gauge dots */
+        .gauge-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .gauge-dot.active { width: 14px; height: 14px; box-shadow: 0 0 0 3px rgba(255,255,255,0.8), 0 0 0 5px currentColor; }
+
+        /* Risk badge pulse */
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.3); }
+            50%       { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+        }
+        .risk-low    { animation: pulse-green 2.5s ease infinite; }
+
+        /* Hover card lift */
+        .info-card { transition: transform 0.15s, box-shadow 0.15s; }
+        .info-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+        /* Score range bar */
+        .range-bar {
+            position: relative;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            margin: 8px 0 4px;
+            overflow: visible;
+        }
+        .range-indicator {
+            position: absolute;
+            top: -5px;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2563eb;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 6px rgba(37,99,235,0.4);
+            transition: left 0.6s cubic-bezier(0.34,1.56,0.64,1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+<div class="flex h-screen">
+
+    <!-- SIDEBAR -->
+    <div class="w-64 bg-slate-800 flex flex-col flex-shrink-0">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            <span class="text-white font-semibold text-lg">LEND X</span>
+        </div>
+        <nav class="flex-1 px-3 py-4 space-y-1">
+            <a href="{% url 'home' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5">
+                <i data-lucide="file-search"></i>
+                <span class="text-sm font-medium">Underwriting</span>
+            </a>
+            <a href="{% url 'profiles' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white">
+                <i data-lucide="users"></i>
+                <span class="text-sm font-medium">Profile list</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- MAIN -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Breadcrumb -->
+        <div class="bg-white border-b border-gray-100 px-8 py-2 flex items-center gap-2 text-xs text-gray-400">
+            <a href="{% url 'home' %}" class="flex items-center gap-1 hover:text-blue-500 transition-colors">
+                <i data-lucide="home" class="w-3 h-3"></i>
+                <span>Dashboard</span>
+            </a>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <a href="{% url 'profiles' %}" class="hover:text-blue-500 transition-colors">Danh sách hồ sơ</a>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <span class="font-medium text-gray-600">{{ profile.name }}</span>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <span class="font-medium text-gray-600">Kết quả chấm điểm</span>
+        </div>
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'profiles' %}"
+                   class="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4 text-gray-600"></i>
+                </a>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">Kết quả chấm điểm tín dụng</h1>
+                    <p class="text-sm text-gray-400">Hồ sơ {{ profile.code }} – {{ profile.name }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="p-2 hover:bg-gray-100 rounded-full">
+                    <i data-lucide="bell" class="text-gray-500 w-5 h-5"></i>
+                </button>
+                <button class="p-2 hover:bg-gray-100 rounded-full">
+                    <i data-lucide="user-circle" class="text-blue-500 w-6 h-6"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-auto p-8">
+            <div class="max-w-5xl mx-auto space-y-5">
+
+                <!-- ===== CARD ĐIỂM CHÍNH ===== -->
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                    <div class="grid grid-cols-2 gap-8 items-center">
+
+                        <!-- Cột trái: điểm số + gauge -->
+                        <div class="text-center">
+                            <div class="score-number text-7xl font-bold mb-1
+                                {% if profile.score >= 650 %}text-emerald-500
+                                {% elif profile.score >= 500 %}text-amber-500
+                                {% else %}text-red-500{% endif %}">
+                                {{ profile.score }}
+                            </div>
+                            <p class="text-sm text-gray-400 mb-6">Điểm tín dụng</p>
+
+                            <!-- Thanh gauge -->
+                            <div class="px-4">
+                                <div class="range-bar">
+                                    <div class="absolute inset-0 rounded-full" style="background: linear-gradient(to right, #ef4444 0%, #f59e0b 35%, #10b981 65%, #059669 100%);"></div>
+                                    <div class="range-indicator" id="score-indicator"></div>
+                                </div>
+                                <div class="flex justify-between text-xs mt-3 text-gray-400">
+                                    <span>300</span>
+                                    <span>500</span>
+                                    <span>650</span>
+                                    <span>750</span>
+                                    <span>850</span>
+                                </div>
+                            </div>
+
+                            <!-- Dots phạm vi -->
+                            <div class="flex items-center justify-center gap-5 mt-5">
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="gauge-dot {% if profile.score < 500 %}active text-red-500{% endif %}" style="background:#ef4444;{% if profile.score < 500 %}color:#ef4444{% endif %}"></span>
+                                    <span class="text-xs text-gray-400">300-500</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="gauge-dot {% if profile.score >= 500 and profile.score < 650 %}active text-amber-500{% endif %}" style="background:#f59e0b;{% if profile.score >= 500 and profile.score < 650 %}color:#f59e0b{% endif %}"></span>
+                                    <span class="text-xs text-gray-400">500-650</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="gauge-dot {% if profile.score >= 650 and profile.score < 750 %}active text-emerald-500{% endif %}" style="background:#10b981;{% if profile.score >= 650 and profile.score < 750 %}color:#10b981{% endif %}"></span>
+                                    <span class="text-xs text-gray-400">650-750</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="gauge-dot {% if profile.score >= 750 %}active text-emerald-600{% endif %}" style="background:#059669;{% if profile.score >= 750 %}color:#059669{% endif %}"></span>
+                                    <span class="text-xs text-gray-400">750-850</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột phải: mức rủi ro + nhận xét -->
+                        <div>
+                            {% if profile.score >= 650 %}
+                            <div class="risk-low bg-emerald-50 border border-emerald-100 rounded-2xl p-6 mb-5">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-emerald-600 font-medium uppercase tracking-wide">Mức độ rủi ro</p>
+                                        <p class="text-2xl font-bold text-emerald-600">Thấp</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-emerald-700 leading-relaxed">
+                                    Khách hàng có điểm tín dụng tốt, đáp ứng các tiêu chí đánh giá.
+                                    Khả năng trả nợ cao và rủi ro tín dụng thấp.
+                                </p>
+                            </div>
+                            {% elif profile.score >= 500 %}
+                            <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-5">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-amber-600 font-medium uppercase tracking-wide">Mức độ rủi ro</p>
+                                        <p class="text-2xl font-bold text-amber-600">Trung bình</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-amber-700 leading-relaxed">
+                                    Khách hàng cần được xem xét thêm một số tiêu chí.
+                                    Khả năng trả nợ ở mức trung bình, cần theo dõi.
+                                </p>
+                            </div>
+                            {% else %}
+                            <div class="bg-red-50 border border-red-100 rounded-2xl p-6 mb-5">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-9 h-9 bg-red-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="x-circle" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-red-600 font-medium uppercase tracking-wide">Mức độ rủi ro</p>
+                                        <p class="text-2xl font-bold text-red-600">Cao</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-red-700 leading-relaxed">
+                                    Hồ sơ có nhiều yếu tố rủi ro. Không đáp ứng đủ tiêu chí
+                                    phê duyệt hiện tại. Đề xuất từ chối hoặc xem xét đặc biệt.
+                                </p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Trạng thái hồ sơ -->
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <i data-lucide="clipboard-check" class="w-4 h-4 text-gray-400"></i>
+                                <span class="text-sm text-gray-500">Trạng thái hồ sơ</span>
+                                <span class="ml-auto text-sm font-semibold
+                                    {% if profile.status == 'Đã duyệt' %}text-emerald-600
+                                    {% elif profile.status == 'Chờ xử lý' %}text-blue-600
+                                    {% else %}text-red-600{% endif %}">
+                                    {{ profile.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== THÔNG TIN CƠ BẢN ===== -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="info-card bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-blue-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Thu nhập</p>
+                            <p class="text-base font-bold text-gray-800">{{ profile.income|floatformat:"0g" }} VNĐ</p>
+                        </div>
+                    </div>
+                    <div class="info-card bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="briefcase" class="w-5 h-5 text-purple-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Nghề nghiệp</p>
+                            <p class="text-base font-bold text-gray-800">{{ profile.occupation }}</p>
+                        </div>
+                    </div>
+                    <div class="info-card bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="clock" class="w-5 h-5 text-teal-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Thời gian làm việc</p>
+                            <p class="text-base font-bold text-gray-800">{{ profile.work_years }} năm</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== NÚT XEM PHÂN TÍCH CHI TIẾT ===== -->
+                <a href="{% url 'score_detail' profile.pk %}"
+                   class="block bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:border-blue-200 hover:bg-blue-50/30 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i>
+                        </div>
+                        <span class="text-blue-600 font-medium text-sm group-hover:text-blue-700">Xem phân tích chi tiết</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-blue-400 ml-auto group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- ===== THÔNG TIN BỔ SUNG ===== -->
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-5 text-center">Thông tin bổ sung</h3>
+                    <div class="grid grid-cols-4 gap-6 text-sm">
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1.5">Ngày đánh giá</p>
+                            <p class="font-semibold text-gray-800">{{ profile.evaluated_at|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1.5">Mô hình AI</p>
+                            <p class="font-semibold text-gray-800">CreditScore v2.5</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1.5">Độ tin cậy</p>
+                            <p class="font-semibold text-emerald-600">95.8%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1.5">Người đánh giá</p>
+                            <p class="font-semibold text-gray-800">Hệ thống tự động</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== HÀNH ĐỘNG ===== -->
+                <div class="flex gap-3 justify-end">
+                    <a href="{% url 'profiles' %}"
+                       class="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                        Quay lại danh sách
+                    </a>
+                    <a href="{% url 'score_detail' profile.pk %}"
+                       class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                        Phân tích chi tiết
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+lucide.createIcons();
+
+// Animate score indicator vào đúng vị trí
+const score = {{ profile.score }};
+const min = 300, max = 850;
+const pct = Math.min(Math.max((score - min) / (max - min) * 100, 2), 98);
+document.getElementById('score-indicator').style.left = pct + '%';
+</script>
+</body>
+</html>
